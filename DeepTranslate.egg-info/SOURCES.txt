@@ -1,0 +1,13 @@
+LICENSE
+README.md
+setup.py
+DeepTranslate.egg-info/PKG-INFO
+DeepTranslate.egg-info/SOURCES.txt
+DeepTranslate.egg-info/dependency_links.txt
+DeepTranslate.egg-info/requires.txt
+DeepTranslate.egg-info/top_level.txt
+translate/__init__.py
+translate/model/__init__.py
+translate/model/attention.py
+translate/model/embedding.py
+translate/model/transformer.py
