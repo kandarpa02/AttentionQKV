@@ -9,7 +9,6 @@ setup(
     long_description=open("README.md").read(),
     url="https://github.com/kandarpa02/DeepTranslate.git",
     packages=find_packages(),
-    install_requires=["torch>=2.1.0"],
     python_requires=">=3.8",
     classifiers=[
         "Programming Language :: Python :: 3",
