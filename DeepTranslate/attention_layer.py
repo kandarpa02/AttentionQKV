@@ -17,8 +17,6 @@ def merge_heads(x):
     return x.reshape(batch, seq_len, num_heads * head_dim)
 
 
-import jax.numpy as jnp
-
 def create_masks(src_tokens, tgt_tokens, pad_id: int):
     """
     Create encoder padding mask and decoder combined mask.
@@ -211,3 +209,4 @@ class MultiheadAttention(nnx.Module):
             deterministic=not self.train,
             rng=rng
         )
+    
