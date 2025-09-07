@@ -16,10 +16,10 @@ def optim_wrapper(optimizer, grads, opt_state, params=None):
         return optimizer.update(grads, opt_state)
 
 @jax.jit
-def train_step(model, optimizer, params, opt_state, x, y):
+def train_step(model, optimizer, params, opt_state, x, y, z, rng):
     def loss_fn_wrapped(params):
-        logits = model(params, x)
-        loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(y, logits.shape[-1])).mean()
+        logits = model(params, x, y, rng)
+        loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(z, logits.shape[-1])).mean()
         return loss
 
     loss, grads = jax.value_and_grad(loss_fn_wrapped)(params)
@@ -28,9 +28,9 @@ def train_step(model, optimizer, params, opt_state, x, y):
     return params, opt_state, loss
 
 @jax.jit
-def eval_step(model, params, x, y):
-    logits = model(params, x)
-    loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(y, logits.shape[-1])).mean()
+def eval_step(model, params, x, y, z, rng):
+    logits = model(params, x, y, rng)
+    loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(z, logits.shape[-1])).mean()
     return loss
 
 
@@ -40,6 +40,7 @@ def train_session(
     model: dict, 
     optimizer, 
     params: dict, 
+    rng: jax.Array,
     opt_state: dict,
     ckpt_path: str | None = None, 
     save_per_epoch: int = 1,
@@ -59,16 +60,16 @@ def train_session(
 
         train_loss = 0.0
         train_batches = 0
-        for xb, yb in data['train_loader']:
-            params, opt_state, loss = train_step(model['train'], optimizer, params, opt_state, xb, yb)
+        for xb, yb, zb in data['train_loader']:
+            params, opt_state, loss = train_step(model['train'], optimizer, params, opt_state, xb, yb, zb, rng)
             train_loss += loss
             train_batches += 1
         train_loss /= train_batches
 
         val_loss = 0.0
         val_batches = 0
-        for xb, yb in data['test_loader']:
-            loss = eval_step(model['val'], params, xb, yb)
+        for xb, yb, zb in data['test_loader']:
+            loss = eval_step(model['val'], params, xb, yb, zb, rng)
             val_loss += loss
             val_batches += 1
         val_loss /= val_batches
