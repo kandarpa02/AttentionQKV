@@ -32,7 +32,7 @@ def _eval_step(model, params, x, y, z, rng):
     loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(z, logits.shape[-1])).mean()
     return loss
 
-train_step = jax.jit(_train_step, static_argnums=(0,))
+train_step = jax.jit(_train_step, static_argnums=(0, 1))
 eval_step = jax.jit(_eval_step, static_argnums=(0,))
 
 
