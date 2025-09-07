@@ -15,8 +15,7 @@ def optim_wrapper(optimizer, grads, opt_state, params=None):
     except TypeError:
         return optimizer.update(grads, opt_state)
 
-@jax.jit(static_argnames=["model"])
-def train_step(model, optimizer, params, opt_state, x, y, z, rng):
+def _train_step(model, optimizer, params, opt_state, x, y, z, rng):
     def loss_fn_wrapped(params):
         logits = model(params, x, y, rng)
         loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(z, logits.shape[-1])).mean()
@@ -27,11 +26,14 @@ def train_step(model, optimizer, params, opt_state, x, y, z, rng):
     params = optax.apply_updates(params, updates)
     return params, opt_state, loss
 
-@jax.jit(static_argnames=["model"])
-def eval_step(model, params, x, y, z, rng):
+
+def _eval_step(model, params, x, y, z, rng):
     logits = model(params, x, y, rng)
     loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(z, logits.shape[-1])).mean()
     return loss
+
+train_step = jax.jit(_train_step, static_argnums=(0,))
+eval_step = jax.jit(_eval_step, static_argnums=(0,))
 
 
 def train_session(
