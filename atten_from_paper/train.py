@@ -62,7 +62,7 @@ def train_session(
 
         train_loss = 0.0
         train_batches = 0
-        for xb, yb, zb in data['train_loader']:
+        for xb, yb, zb in next(data['train_loader']):
             params, opt_state, loss = train_step(model['train'], optimizer, params, opt_state, xb, yb, zb, rng)
             train_loss += loss
             train_batches += 1
@@ -70,7 +70,7 @@ def train_session(
 
         val_loss = 0.0
         val_batches = 0
-        for xb, yb, zb in data['test_loader']:
+        for xb, yb, zb in next(data['test_loader']):
             loss = eval_step(model['val'], params, xb, yb, zb, rng)
             val_loss += loss
             val_batches += 1
