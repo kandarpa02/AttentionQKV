@@ -34,7 +34,7 @@ import time
 def train_session(epochs, 
                   data:Dict[str, Iterable], 
                   model:Dict[str, Callable], 
-                  optimizer, opt_state):
+                  optimizer, params:Dict, opt_state:Dict):
     
     for epoch in range(epochs):
         start_time = time.time()
