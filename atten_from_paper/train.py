@@ -12,16 +12,16 @@ class TrainState(train_state.TrainState):
 
 def _train_step(state: TrainState, batch: dict, rng: jax.Array) -> tuple[TrainState, float]:
     def loss_fn(params):
-        logits = state.apply_fn(params, batch['x'], batch['y'], rng)
-        loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(batch['z'], logits.shape[-1])).mean()
+        logits = state.apply_fn(params, batch[0], batch[1], rng)
+        loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(batch[2], logits.shape[-1])).mean()
         return loss
     loss, grads = jax.value_and_grad(loss_fn)(state.params)
     state = state.apply_gradients(grads=grads)
     return state, loss.item()
 
 def _eval_step(state: TrainState, batch: dict, rng: jax.Array) -> float:
-    logits = state.apply_fn(state.params, batch['x'], batch['y'], rng)
-    loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(batch['z'], logits.shape[-1])).mean()
+    logits = state.apply_fn(state.params, batch[0], batch[1], rng)
+    loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(batch[2], logits.shape[-1])).mean()
     return loss.item()
 
 def precompile_functions(train_state: TrainState, val_state: TrainState, rng: jax.Array, sample_batch: dict):
@@ -62,7 +62,7 @@ def train_session(
         train_batches = 0
 
         for i, (xb, yb, zb) in enumerate(data['train_loader']):
-            batch = {'x': xb, 'y': yb, 'z': zb}
+            batch = (xb, yb, zb)
             train_state, loss = train_step(train_state, batch, rng)
             train_loss += loss
             train_batches += 1
@@ -74,7 +74,7 @@ def train_session(
         val_loss = 0.0
         val_batches = 0
         for xb, yb, zb in data['test_loader']:
-            batch = {'x': xb, 'y': yb, 'z': zb}
+            batch = (xb, yb, zb)
             loss = eval_step(val_state, batch, rng)
             val_loss += loss
             val_batches += 1
