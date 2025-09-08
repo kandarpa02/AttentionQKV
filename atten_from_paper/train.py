@@ -12,17 +12,17 @@ class TrainState(train_state.TrainState):
 
 def _train_step(state: TrainState, batch: dict, rng: jax.Array) -> tuple[TrainState, float]:
     def loss_fn(params):
-        logits = state.apply_fn({'params': params}, batch['x'], batch['y'], rng)
+        logits = state.apply_fn(params, batch['x'], batch['y'], rng)
         loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(batch['z'], logits.shape[-1])).mean()
         return loss
     loss, grads = jax.value_and_grad(loss_fn)(state.params)
     state = state.apply_gradients(grads=grads)
-    return state, loss
+    return state, loss.item()
 
 def _eval_step(state: TrainState, batch: dict, rng: jax.Array) -> float:
-    logits = state.apply_fn({'params': state.params}, batch['x'], batch['y'], rng)
+    logits = state.apply_fn(state.params, batch['x'], batch['y'], rng)
     loss = optax.softmax_cross_entropy(logits, jax.nn.one_hot(batch['z'], logits.shape[-1])).mean()
-    return loss
+    return loss.item()
 
 def precompile_functions(train_state: TrainState, val_state: TrainState, rng: jax.Array, sample_batch: dict):
     print("Pre-compiling training step...")
