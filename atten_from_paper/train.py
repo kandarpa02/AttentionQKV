@@ -66,9 +66,7 @@ def train_session(
             train_state, loss = train_step(train_state, batch, rng)
             train_loss += loss.item()
             train_batches += 1
-            if i % 100 == 0:
-                print(f"Epoch {epoch+1}, Batch {i}, Train Loss: {loss.item():.4f}")
-
+            
         train_loss /= train_batches
 
         val_loss = 0.0
