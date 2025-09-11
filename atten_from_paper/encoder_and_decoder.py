@@ -37,7 +37,7 @@ class EncoderBlock(nnx.Module):
     train: bool = True
 
     @nnx.compact
-    def __call__(self, x, mask=None, rng:Array|Any=None):
+    def __call__(self, x, mask, rng):
         rng1, rng2 = jax.random.split(rng, 2)
         attn_out = MultiheadAttention(
             self.num_heads, 
