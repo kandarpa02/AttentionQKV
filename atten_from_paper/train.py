@@ -44,7 +44,8 @@ def train_session(
     ckpt_path: str | None = None,
     save_per_epoch: int = 1,
 ) -> tuple[TrainState, TrainState]:
-    sample_batch = next(iter(data['train_loader']))
+
+    sample_batch = next(iter(data['train_loader']))  # JAX DataLoader
     train_step, eval_step = precompile_functions(train_state, val_state, rng, sample_batch)
 
     start_epoch = 0
@@ -66,7 +67,7 @@ def train_session(
             train_state, loss = train_step(train_state, batch, rng)
             train_loss += loss.item()
             train_batches += 1
-            
+
         train_loss /= train_batches
 
         val_loss = 0.0
