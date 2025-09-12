@@ -103,8 +103,16 @@ class Trainer:
     def save_checkpoint(self, epoch):
         if self.ckpt_save_path and ((epoch + 1) % self.save_per_epoch == 0):
             state = {'train': self.train_state, 'val': self.val_state}
-            checkpoints.save_checkpoint(self.ckpt_save_path, state, epoch + 1, overwrite=True)
+            # Save all checkpoints, do not overwrite
+            checkpoints.save_checkpoint(
+                self.ckpt_save_path,
+                target=state,
+                step=epoch + 1,
+                overwrite=False,   # <- important
+                keep=epoch         # keep all checkpoints, or set an int to keep last N
+            )
             print(f"Checkpoint saved at epoch {epoch + 1}")
+
 
     def train(self, epochs: int):
         for epoch in range(self.start_epoch, epochs):
