@@ -85,7 +85,7 @@ class Trainer:
         pad_id = getattr(self.model_v, "pad_id", 0)
         src, dec_inp, target = batch
 
-        logits = self.model_v.apply(state.params, src, dec_inp)
+        logits = self.model_v.apply(state.params, src, dec_inp, rng)
 
         pad_mask = (target != pad_id)
         loss = optax.softmax_cross_entropy(
