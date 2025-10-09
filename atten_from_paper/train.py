@@ -66,7 +66,7 @@ class Trainer:
 
         def loss_fn(params):
             src, dec_inp, target = batch
-            logits = self.model_t.apply(params, src, dec_inp, rng, deterministic=False)
+            logits = self.model_t.apply(params, src, dec_inp, rng)
             
             # Mask out PAD tokens from loss
             pad_mask = (target != pad_id)
@@ -85,7 +85,7 @@ class Trainer:
         pad_id = getattr(self.model_v, "pad_id", 0)
         src, dec_inp, target = batch
 
-        logits = self.model_v.apply(state.params, src, dec_inp, rng, deterministic=True)
+        logits = self.model_v.apply(state.params, src, dec_inp)
 
         pad_mask = (target != pad_id)
         loss = optax.softmax_cross_entropy(
