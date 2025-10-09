@@ -7,21 +7,21 @@ from .encoder_and_decoder import (
 import jax.numpy as jnp
 from jax import Array
 import jax
-import flax.linen as nnx
+import flax.linen as nn
 from typing import Any
 
 
-class PositionalEncoding(nnx.Module):
+class PositionalEncoding(nn.Module):
     max_len: int
     d_model: int
 
-    @nnx.compact
+    @nn.compact
     def __call__(self, x):
-        pe = self.param('pos_emb', nnx.zeros, (1, self.max_len, self.d_model))
+        pe = self.param('pos_emb', nn.zeros, (1, self.max_len, self.d_model))
         return x + pe[:, :x.shape[1], :]
 
 
-class EncoderwithWeightTying(nnx.Module):
+class EncoderwithWeightTying(nn.Module):
     num_heads:int
     dropout: float
     d_ff: int
@@ -37,7 +37,8 @@ class EncoderwithWeightTying(nnx.Module):
             x = self.encoder(x, enc_mask, rng)
         return x
 
-class Transformer(nnx.Module):
+
+class Transformer(nn.Module):
     num_layers: int
     num_heads: int
     d_model: int
@@ -78,19 +79,19 @@ class Transformer(nnx.Module):
             for _ in range(self.num_layers)
         ]
 
-    @nnx.compact
+    @nn.compact
     def __call__(self, src_tokens, tgt_tokens, rng):
         rng1, rng2 = jax.random.split(rng, 2)
         enc_mask, tgt_mask = self.create_masks(src_tokens, tgt_tokens)
 
-        src_embed = nnx.Embed(self.vocab_size, self.d_model)(src_tokens)
-        tgt_embed = nnx.Embed(self.vocab_size, self.d_model)(tgt_tokens)
+        src_embed = nn.Embed(self.vocab_size, self.d_model)(src_tokens)
+        tgt_embed = nn.Embed(self.vocab_size, self.d_model)(tgt_tokens)
 
         src_embed = PositionalEncoding(self.max_len, self.d_model)(src_embed)
         tgt_embed = PositionalEncoding(self.max_len, self.d_model)(tgt_embed)
 
-        src_embed = nnx.Dropout(self.dropout)(src_embed, rng=rng1, deterministic=not self.train)
-        tgt_embed = nnx.Dropout(self.dropout)(tgt_embed, rng=rng2, deterministic=not self.train)
+        src_embed = nn.Dropout(self.dropout)(src_embed, rng=rng1, deterministic=not self.train)
+        tgt_embed = nn.Dropout(self.dropout)(tgt_embed, rng=rng2, deterministic=not self.train)
 
         x = src_embed
         x = self.encoder_layers(x, enc_mask, rng1, self.num_layers)
@@ -101,5 +102,5 @@ class Transformer(nnx.Module):
             rng2, layer_rng = jax.random.split(rng2)
             y = layer(y, enc_output, enc_mask, tgt_mask, layer_rng)
 
-        logits = nnx.Dense(self.vocab_size)(y)
+        logits = nn.Dense(self.vocab_size)(y)
         return logits

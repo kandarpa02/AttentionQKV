@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import Array
 import jax
-import flax.linen as nnx
+import flax.linen as nn
 from flax.linen.initializers import lecun_normal
 from typing import Any
 
@@ -157,7 +157,7 @@ def multi_head_attention(
 
     #   c) Softmax -> attention weights
     weights = jax.nn.softmax(scores, axis = -1)
-    weights = nnx.Dropout(dropout)(weights, deterministic=deterministic, rng=k1)
+    weights = nn.Dropout(dropout)(weights, deterministic=deterministic, rng=k1)
 
     #   d) Weighted sum of Values
     attended = weights @ Value  # [batch, heads, seq_len, head_dim]
@@ -167,16 +167,16 @@ def multi_head_attention(
 
     # 5. Final linear projection (output projection)
     out = linear(merged, ow, ob)
-    out = nnx.Dropout(dropout)(out, deterministic=deterministic, rng=k2)
+    out = nn.Dropout(dropout)(out, deterministic=deterministic, rng=k2)
     return out
 
-class MultiheadAttention(nnx.Module):
+class MultiheadAttention(nn.Module):
     num_heads: int
     dropout: float
     use_bias: bool = True
     train: bool = True
 
-    @nnx.compact
+    @nn.compact
     def __call__(self, q_vec, k_vec, v_vec, mask=None, rng=None):
         d_model = q_vec.shape[-1]
         shape = (d_model, d_model)
@@ -191,10 +191,10 @@ class MultiheadAttention(nnx.Module):
         ow = self.param("ow", lecun_normal(), shape)
 
         if self.use_bias:
-            qb = self.param("qb", nnx.zeros, (d_model,))
-            kb = self.param("kb", nnx.zeros, (d_model,))
-            vb = self.param("vb", nnx.zeros, (d_model,))
-            ob = self.param("ob", nnx.zeros, (d_model,))
+            qb = self.param("qb", nn.zeros, (d_model,))
+            kb = self.param("kb", nn.zeros, (d_model,))
+            vb = self.param("vb", nn.zeros, (d_model,))
+            ob = self.param("ob", nn.zeros, (d_model,))
         else:
             qb = kb = vb = ob = None
 
